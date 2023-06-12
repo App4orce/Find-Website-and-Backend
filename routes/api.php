@@ -24,6 +24,11 @@ Route::prefix('v1')->group(function () {
             Route::post("register", [\App\Http\Controllers\Api\AuthController::class, 'register']);
             Route::post("login", [\App\Http\Controllers\Api\AuthController::class, 'login']);
             Route::get("home", [\App\Http\Controllers\Api\HomeController::class, 'index']);
+            Route::get("search", [\App\Http\Controllers\Api\HomeController::class, 'search']);
+            Route::get("getResturantByCategory", [\App\Http\Controllers\Api\HomeController::class, 'getResturantByCategory']);
+            Route::get("getStoresByCategory", [\App\Http\Controllers\Api\HomeController::class, 'getStoresByCategory']);
+            Route::get("getMerchantDetail", [\App\Http\Controllers\Api\HomeController::class, 'getMerchantDetail']);
+            Route::get("getProductSubItems", [\App\Http\Controllers\Api\HomeController::class, 'getProductSubItems']);
             Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
     });

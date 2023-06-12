@@ -43,8 +43,18 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function wishlists()
+    public function wishlist()
     {
-        return $this->hasMany(Whistlist::class, 'user_to');
+        return $this->hasMany(Whistlist::class, 'user_id');
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function categories()
+    {
+        return $this->hasMany(MerchantCategory::class);
     }
 }

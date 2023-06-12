@@ -18,17 +18,20 @@ class CategorySeeder extends Seeder
         Category::create([
             'image' => $faker->imageUrl(),
             'name' =>  'Burgers',
+            'type' => 'restaurants'
         ]);
 
         Category::create([
             'image' => $faker->imageUrl(),
             'name' =>  'Piza',
+            'type' => 'restaurants'
         ]);
 
         
         Category::create([
             'image' => $faker->imageUrl(),
             'name' =>  'Sea Food',
+            'type' => 'restaurants'
         ]);
 
 
@@ -36,13 +39,38 @@ class CategorySeeder extends Seeder
         Category::create([
             'image' => $faker->imageUrl(),
             'name' =>  'Fine Dining',
+            'type' => 'restaurants'
         ]);
 
         
         Category::create([
             'image' => $faker->imageUrl(),
             'name' =>  'Indian',
+            'type' => 'restaurants'
         ]);
+
+        Category::create([
+            'image' => $faker->imageUrl(),
+            'name' =>  'Well-Being',
+            'type' => 'store'
+        ]);
+
+
+        Category::create([
+            'image' => $faker->imageUrl(),
+            'name' =>  'Gifts',
+            'type' => 'store'
+        ]);
+
+
+        Category::create([
+            'image' => $faker->imageUrl(),
+            'name' =>  'Home & Fashion',
+            'type' => 'store'
+        ]);
+
+
+      
 
         
 

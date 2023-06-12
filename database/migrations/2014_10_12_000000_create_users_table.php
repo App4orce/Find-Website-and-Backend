@@ -25,6 +25,8 @@ return new class extends Migration
             $table->integer('status');
             $table->string('fcm_token')->nullable();
             $table->integer('online_status')->default(0);
+            $table->integer('city_id')->nullable();
+            $table->integer('category_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

@@ -31,6 +31,21 @@ class MerchantSeeder extends Seeder
             'email' => $faker->email
         ]);
 
+        User::create([
+            'name' => $faker->name,
+            'first_name' => $faker->firstName,
+            'last_name' => $faker->lastName,
+            'status' => 1,
+            'online_status' => 1,
+            'longitude' => '3333',
+            'latitude' => '33333',
+            'role' => 2,
+            'profile_image'=> 'merchant.jpg',
+            'phone' => $faker->phoneNumber(),
+            'password' => Hash::make('12345678'),
+            'email' => $faker->email
+        ]);
+
         
     }
 }

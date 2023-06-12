@@ -110,8 +110,9 @@ class AuthController extends Controller
             } else {
                 //1=>user
                 //2=>merchant
-                //3=>delivery provider
-                //4=>delivery provider partner bussniess
+                //3 =>store
+                //4=>delivery provider
+                //5=>delivery provider partner bussniess
                 $user = new User();
                 if ($request->hasFile('profile_image')) {
                     $image = $request->file('profile_image');

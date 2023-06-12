@@ -1,0 +1,11 @@
+$product = new Product();
+$product->name = 'Example Product';
+$product->save();
+
+$subItem1 = new SubItem();
+$subItem1->name = 'Sub Item 1';
+$product->subItems()->save($subItem1);
+
+$subItem2 = new SubItem();
+$subItem2->name = 'Sub Item 2';
+$product->subItems()->save($subItem2);
