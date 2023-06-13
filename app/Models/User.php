@@ -57,4 +57,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(MerchantCategory::class);
     }
+
+    public function cart()
+    {
+        return $this->hasMany(Cart::class,'user_id');
+    }
+
+    public function address()
+    {
+        return $this->hasMany(DeliveryAddress::class)->select('id','longitude','latitude','location','address');
+    }
+
+
 }

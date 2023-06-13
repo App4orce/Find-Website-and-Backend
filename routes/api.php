@@ -29,6 +29,15 @@ Route::prefix('v1')->group(function () {
             Route::get("getStoresByCategory", [\App\Http\Controllers\Api\HomeController::class, 'getStoresByCategory']);
             Route::get("getMerchantDetail", [\App\Http\Controllers\Api\HomeController::class, 'getMerchantDetail']);
             Route::get("getProductSubItems", [\App\Http\Controllers\Api\HomeController::class, 'getProductSubItems']);
+            Route::get("getCartItems", [\App\Http\Controllers\Api\HomeController::class, 'getCartItems'])->middleware('auth:sanctum');
+            Route::post("addCart", [\App\Http\Controllers\Api\HomeController::class, 'addCart'])->middleware('auth:sanctum');
+            Route::post("support", [\App\Http\Controllers\Api\HomeController::class, 'addSupport'])->middleware('auth:sanctum');
+            Route::post("delete/account", [\App\Http\Controllers\Api\HomeController::class, 'deleteAcount'])->middleware('auth:sanctum');
+            Route::post("add/address", [\App\Http\Controllers\Api\HomeController::class, 'addAddess'])->middleware('auth:sanctum');
+            Route::get("getAddress", [\App\Http\Controllers\Api\HomeController::class, 'getAddress'])->middleware('auth:sanctum');
+            Route::post("delete/address", [\App\Http\Controllers\Api\HomeController::class, 'deleteAddress'])->middleware('auth:sanctum');
+            Route::get("getFavMerchant", [\App\Http\Controllers\Api\HomeController::class, 'getFavMerchants'])->middleware('auth:sanctum');
+            Route::PUT("updateProfile", [\App\Http\Controllers\Api\HomeController::class, 'updateProfile'])->middleware('auth:sanctum');
             Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
     });
