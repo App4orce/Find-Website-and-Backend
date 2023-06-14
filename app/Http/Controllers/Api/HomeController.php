@@ -12,6 +12,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\DeliveryAddress;
 use App\Models\Product;
+use App\Models\Review;
 use App\Models\Support;
 use Illuminate\Http\Request;
 use Auth;
@@ -341,17 +342,17 @@ class HomeController extends Controller
             $rules = array(
                 'id'  => 'required',   //merchant id
             );
-    
+
             $messages = [
                 'id.required' => 'Merchant ID required',
             ];
-    
+
             $validator = Validator::make($request->all(), $rules, $messages);
-    
+
             if ($validator->fails()) {
                 $messages = $validator->errors()->all();
                 $msg = $messages[0];
-    
+
                 return response()->json([
                     'status' => false,
                     'code' => 404,
@@ -368,7 +369,7 @@ class HomeController extends Controller
                         'reviews'
                     ])
                     ->first();
-    
+
                 if (!$merchant) {
                     return response()->json([
                         'status' => false,
@@ -386,7 +387,7 @@ class HomeController extends Controller
                         'products' => $category->products,
                     ];
                 });
-    
+
                 $data = [
                     'merchant_detail' => [
                         'name' => $merchant->name,
@@ -396,9 +397,9 @@ class HomeController extends Controller
                         'average_rating' => $reviewsAvgRating
                     ],
                     'categories' => $categories,
-                   
+
                 ];
-    
+
                 return response()->json([
                     'status' => true,
                     'code' => 200,
@@ -416,7 +417,7 @@ class HomeController extends Controller
             ], 500, [], JSON_FORCE_OBJECT);
         }
     }
-    
+
 
 
     public function getProductSubItems(Request $request)
@@ -966,12 +967,17 @@ class HomeController extends Controller
                 ->with(['discounts' => function ($query) {
                     $query->select('user_id', 'percentage');
                 }])
+                ->with(['wishlist' => function ($query) {
+                    $query->select('user_id');
+                }])
                 ->whereIn('role', [2, 3])
                 ->select('id', 'name', 'profile_image')
                 ->get();
             $data = [
                 'restaurants' => $usersWithDiscounts->map(function ($user) {
                     $user->discounts->makeHidden('user_id');
+                    $user->wishlist_status = $user->wishlist->isNotEmpty();
+                    unset($user->wishlist);
                     return $user;
                 })
             ];
@@ -982,6 +988,57 @@ class HomeController extends Controller
                 'message' => 'Restaurant list retrieved successfully'
             ], 200);
             return $usersWithDiscounts;
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function rateOrder(Request $request)
+    {
+        try {
+            $rules = array(
+                'user_to'  => 'required',
+                'review' => 'required',
+                'rate' => 'required',
+
+            );
+            $messages = [
+                'user_to.required' => 'merchant id required',
+                'review.required' => 'Please give text review',
+                'rate.required' => 'star review is required',
+
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                $messages = $validator->errors()->all();
+                $msg = $messages[0];
+                return response()->json([
+                    'status' => false,
+                    'code' => 401,
+                    'data' => [],
+                    'message' => $msg
+                ], 401, [], JSON_FORCE_OBJECT);
+            } else {
+
+                $review = new Review();
+                $review->user_id = Auth::user()->id;
+                $review->user_to = $request->user_to;
+                $review->review = $request->review;
+                $review->rate = $request->rate;
+                $review->save();
+                return response()->json([
+                    'status' => true,
+                    'code' => 200,
+                    'data' => [],
+                    'message' => 'Review added successfully'
+                ], 200, [], JSON_FORCE_OBJECT);
+            }
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,

@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function () {
             Route::get("foodDelivery", [\App\Http\Controllers\Api\HomeController::class, 'foodDelivery']);
             Route::get("stores", [\App\Http\Controllers\Api\HomeController::class, 'stores']);
             Route::get("discounts", [\App\Http\Controllers\Api\HomeController::class, 'discounts']);
+            Route::post("rate/order", [\App\Http\Controllers\Api\HomeController::class, 'rateOrder'])->middleware('auth:sanctum');
             Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
     });
