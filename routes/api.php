@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     Route::prefix('user')->group(function () {
         Route::middleware(ChangeLocale::class)->group(function (): void {
-            Route::post("register", [\App\Http\Controllers\Api\AuthController::class, 'register']);
+            Route::post("verifyOtp", [\App\Http\Controllers\Api\AuthController::class, 'verifyOtp']);
             Route::post("login", [\App\Http\Controllers\Api\AuthController::class, 'login']);
             Route::get("home", [\App\Http\Controllers\Api\HomeController::class, 'index']);
             Route::get("search", [\App\Http\Controllers\Api\HomeController::class, 'search']);
@@ -38,6 +38,9 @@ Route::prefix('v1')->group(function () {
             Route::post("delete/address", [\App\Http\Controllers\Api\HomeController::class, 'deleteAddress'])->middleware('auth:sanctum');
             Route::get("getFavMerchant", [\App\Http\Controllers\Api\HomeController::class, 'getFavMerchants'])->middleware('auth:sanctum');
             Route::PUT("updateProfile", [\App\Http\Controllers\Api\HomeController::class, 'updateProfile'])->middleware('auth:sanctum');
+            Route::get("foodDelivery", [\App\Http\Controllers\Api\HomeController::class, 'foodDelivery']);
+            Route::get("stores", [\App\Http\Controllers\Api\HomeController::class, 'stores']);
+            Route::get("discounts", [\App\Http\Controllers\Api\HomeController::class, 'discounts']);
             Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
     });

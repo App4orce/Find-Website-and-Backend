@@ -13,4 +13,8 @@ class MerchantCategory extends Model
     {
         return $this->hasMany(Product::class);
     }
+    public function restaurants()
+    {
+        return $this->hasMany(User::class, 'category_id');
+    }
 }

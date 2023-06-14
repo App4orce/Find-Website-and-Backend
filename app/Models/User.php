@@ -60,13 +60,26 @@ class User extends Authenticatable
 
     public function cart()
     {
-        return $this->hasMany(Cart::class,'user_id');
+        return $this->hasMany(Cart::class, 'user_id');
     }
 
     public function address()
     {
-        return $this->hasMany(DeliveryAddress::class)->select('id','longitude','latitude','location','address');
+        return $this->hasMany(DeliveryAddress::class)->select('id', 'longitude', 'latitude', 'location', 'address');
+    }
+    public function category()
+    {
+        return $this->belongsTo(MerchantCategory::class, 'category_id');
     }
 
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'user_to');
+    }
+
+    public function discounts()
+    {
+        return $this->hasOne(Discount::class, 'user_id', 'id');
+    }
 }

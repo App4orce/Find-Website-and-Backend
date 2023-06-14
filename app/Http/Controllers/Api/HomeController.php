@@ -32,19 +32,28 @@ class HomeController extends Controller
                 ];
             });
 
-            $favaouriteMerchant = User::find(1)
+            $favoriteMerchant = User::find(1)
                 ->whereHas('wishlist', function ($query) {
                     $query->whereNotNull('user_to');
                 })
-                ->with('wishlist.restaurant')
+                ->with(['wishlist.restaurant.category', 'reviews'])
                 ->limit(5)
                 ->get()
                 ->pluck('wishlist.*.restaurant')
-                ->flatten() // Flatten the nested array
+                ->flatten()
                 ->map(function ($restaurant) {
+                    $categories = $restaurant->category->pluck('category_name')->take(3);
+                    $reviews = $restaurant->reviews;
+                    $reviewCount = $reviews->count();
+                    $averageRating = $reviews->avg('rate');
+                    $reviewCountLabel = $reviewCount > 100 ? '100+' : $reviewCount;
                     return [
+                        'id' => $restaurant['id'],
                         'name' => $restaurant['name'],
-                        'profile_image' =>  asset('public/profile_image/' . $restaurant['profile_image']),
+                        'profile_image' => asset('public/profile_image/' . $restaurant['profile_image']),
+                        'category_name' =>  $categories,
+                        'review_count' => $reviewCountLabel,
+                        'average_rating' => $averageRating,
                     ];
                 });
 
@@ -76,7 +85,7 @@ class HomeController extends Controller
 
             $data = [
                 'slider' => $slides,
-                'favaouriteMerchant' =>   $favaouriteMerchant,
+                'favaouriteMerchant' =>   $favoriteMerchant,
                 'restaurants' =>   $restaurantCategories,
                 'stores' =>   $storeCategories,
 
@@ -330,22 +339,19 @@ class HomeController extends Controller
     {
         try {
             $rules = array(
-
                 'id'  => 'required',   //merchant id
-
-
-
             );
+    
             $messages = [
-                'id.required' => 'merchant id  required',
-
-
+                'id.required' => 'Merchant ID required',
             ];
-
+    
             $validator = Validator::make($request->all(), $rules, $messages);
+    
             if ($validator->fails()) {
                 $messages = $validator->errors()->all();
                 $msg = $messages[0];
+    
                 return response()->json([
                     'status' => false,
                     'code' => 404,
@@ -353,56 +359,65 @@ class HomeController extends Controller
                     'message' => $msg
                 ], 404, [], JSON_FORCE_OBJECT);
             } else {
-                return $merchants = User::find($request->id)->with(['categories.products' => function ($query) {
-                    $query->select('id', 'name', 'image', 'description', 'price', 'merchant_category_id'); // Select the desired columns from the products table
-                }])
-                    ->where('role', 2)
-                    ->get()
-                    ->map(function ($merchant) {
-                        $categories = $merchant->categories->map(function ($category) {
-                            return [
-                                'id' => $category->id,
-                                'name' => $category->category_name,
-                                'products' => $category->products,
-                            ];
-                        });
-
-                        return [
-                            'merchant_detail' => [
-                                'name' => $merchant->name,
-                                'profile_image' => asset('public/profile_image/' . $merchant->profile_image),
-                                'min_order' => number_format($merchant->min_order, 2)
-                            ],
-                            'categories' => $categories,
-                        ];
-                    });
-                // $data = [
-                //     'merchant_detail' => [
-                //         'name' => $merchant->name,
-                //         'profile_image' => $merchant->profile_image,
-                //     ],
-                //     'categories' => $categories,
-                //     'first_category_products' => $firstCategoryProducts
-                // ];
-
-                // return response()->json([
-                //     'status' => true,
-                //     'code' => 200,
-                //     'data' =>  $data,
-                //     'message' => 'search listing'
-                // ], 200);
+                $merchant = User::where('id', $request->id)
+                    ->whereIn('role', [2, 3])
+                    ->with([
+                        'categories.products' => function ($query) {
+                            $query->select('id', 'name', 'image', 'description', 'price', 'merchant_category_id');
+                        },
+                        'reviews'
+                    ])
+                    ->first();
+    
+                if (!$merchant) {
+                    return response()->json([
+                        'status' => false,
+                        'code' => 404,
+                        'data' => [],
+                        'message' => 'Merchant not found'
+                    ], 404, [], JSON_FORCE_OBJECT);
+                }
+                $reviewsCount = $merchant->reviews->count();
+                $reviewsAvgRating = $merchant->reviews->avg('rate');
+                $categories = $merchant->categories->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->category_name,
+                        'products' => $category->products,
+                    ];
+                });
+    
+                $data = [
+                    'merchant_detail' => [
+                        'name' => $merchant->name,
+                        'profile_image' => asset('public/profile_image/' . $merchant->profile_image),
+                        'min_order' => number_format($merchant->min_order, 2),
+                        'reviews_count' => $reviewsCount,
+                        'average_rating' => $reviewsAvgRating
+                    ],
+                    'categories' => $categories,
+                   
+                ];
+    
+                return response()->json([
+                    'status' => true,
+                    'code' => 200,
+                    'data' =>  $data,
+                    'message' => 'Get merchant detail'
+                ], 200);
             }
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'code' => 500,
                 'data' => [],
-                'message' => 'Something Wrong',
+                'message' => 'Something went wrong',
                 'sql_error' => $th->getMessage()
-
             ], 500, [], JSON_FORCE_OBJECT);
         }
     }
+    
+
 
     public function getProductSubItems(Request $request)
     {
@@ -801,7 +816,7 @@ class HomeController extends Controller
         }
     }
 
-    
+
     public function updateProfile(Request $request)
     {
         try {
@@ -838,7 +853,7 @@ class HomeController extends Controller
                 if (!empty($input['email'])) {
                     $input['email'] = $input['email'];
                 }
-            
+
 
                 if ($request->hasFile('profile_image')) {
                     $image = $request->file('profile_image');
@@ -868,6 +883,111 @@ class HomeController extends Controller
                 'data' => [],
                 'message' => 'Something Wrong',
 
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function foodDelivery(Request $request)
+    {
+        try {
+
+            $restaurants = User::where('role', 2)
+                ->get()
+                ->map(function ($restaurant) {
+                    $restaurant->profile_image = asset('public/profile_image' . $restaurant->profile_image);
+                    return [
+                        'id' => $restaurant->id,
+                        'name' => $restaurant->name,
+                        'role' => $restaurant->role,
+                        'image' => asset('public/profile_image' . $restaurant->profile_image),
+                    ];
+                });
+
+            $data = [
+                'restaurants' => $restaurants
+            ];
+
+            return response()->json([
+                'status' => true,
+                'code' => 200,
+                'data' => $data,
+                'message' => 'Restaurant list retrieved successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function stores(Request $request)
+    {
+        try {
+
+            $restaurants = User::where('role', 3)
+                ->get()
+                ->map(function ($restaurant) {
+                    $restaurant->profile_image = asset('public/profile_image' . $restaurant->profile_image);
+                    return [
+                        'id' => $restaurant->id,
+                        'name' => $restaurant->name,
+                        'role' => $restaurant->role,
+                        'image' => asset('public/profile_image' . $restaurant->profile_image),
+                    ];
+                });
+
+            $data = [
+                'restaurants' => $restaurants
+            ];
+
+            return response()->json([
+                'status' => true,
+                'code' => 200,
+                'data' => $data,
+                'message' => 'Restaurant list retrieved successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function discounts(Request $request)
+    {
+        try {
+            $usersWithDiscounts = User::whereHas('discounts')
+                ->with(['discounts' => function ($query) {
+                    $query->select('user_id', 'percentage');
+                }])
+                ->whereIn('role', [2, 3])
+                ->select('id', 'name', 'profile_image')
+                ->get();
+            $data = [
+                'restaurants' => $usersWithDiscounts->map(function ($user) {
+                    $user->discounts->makeHidden('user_id');
+                    return $user;
+                })
+            ];
+            return response()->json([
+                'status' => true,
+                'code' => 200,
+                'data' => $data,
+                'message' => 'Restaurant list retrieved successfully'
+            ], 200);
+            return $usersWithDiscounts;
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
             ], 500, [], JSON_FORCE_OBJECT);
         }
     }
