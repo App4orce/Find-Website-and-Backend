@@ -42,7 +42,16 @@ Route::prefix('v1')->group(function () {
             Route::get("stores", [\App\Http\Controllers\Api\HomeController::class, 'stores']);
             Route::get("discounts", [\App\Http\Controllers\Api\HomeController::class, 'discounts']);
             Route::post("rate/order", [\App\Http\Controllers\Api\HomeController::class, 'rateOrder'])->middleware('auth:sanctum');
+            Route::post("place/order", [\App\Http\Controllers\Api\OrderController::class, 'placeOrder'])->middleware('auth:sanctum');
+            Route::get("order/detail", [\App\Http\Controllers\Api\OrderController::class, 'orderDetail'])->middleware('auth:sanctum');
+            Route::get("activeOrder", [\App\Http\Controllers\Api\OrderController::class, 'activeOrder'])->middleware('auth:sanctum');
+
             Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
+    });
+
+    Route::group(['middleware' => 'auth:sanctum'], function () {
+        Route::post("save/message", [\App\Http\Controllers\ChatController::class, 'saveMessage']);
+        Route::get("get/messages", [\App\Http\Controllers\ChatController::class, 'getMessages']);
     });
 });

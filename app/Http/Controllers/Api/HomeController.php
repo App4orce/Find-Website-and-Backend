@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\DeliveryAddress;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\Support;
@@ -494,18 +495,28 @@ class HomeController extends Controller
                     // Add more restaurant details as needed
                 ];
 
-                $itemDetails = $cartItems->pluck('product')->map(function ($product) {
+
+                $subamount = $cartItems->sum(function ($item) {
+                    return $item->quantity * $item->product->price;
+                });
+
+                $itemDetails = $cartItems->map(function ($product) {
                     return [
-                        'name' => $product->name,
-                        'price' => $product->price,
-                        'description' => $product->description,
+                        'name' => $product->product->name,
+                        'price' => $product->product->price,
+                        'description' => $product->product->description,
+                        'quantity' => $product->quantity,
                         // Add more product details as needed
                     ];
                 })->toArray();
 
+                $deliveryfee = 0;
                 $responseData[] = [
                     'restaurant_details' => $restaurantDetails,
                     'items' => $itemDetails,
+                    'subamount' => $subamount, // Include the total amount in the response
+                    'deliveryfee' => 0, 
+                    'total' => $deliveryfee + $subamount
                 ];
             }
 
@@ -1048,4 +1059,6 @@ class HomeController extends Controller
             ], 500, [], JSON_FORCE_OBJECT);
         }
     }
+
+    
 }

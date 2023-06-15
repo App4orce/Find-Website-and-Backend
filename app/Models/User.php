@@ -82,4 +82,15 @@ class User extends Authenticatable
     {
         return $this->hasOne(Discount::class, 'user_id', 'id');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id');
+    }
+
+    // Define the relationship with Order model for orders as a merchant
+    public function merchantOrders()
+    {
+        return $this->hasMany(Order::class, 'merchant_id');
+    }
 }
