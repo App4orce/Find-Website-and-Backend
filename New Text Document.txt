@@ -112,3 +112,26 @@ The request will be sent to the specified endpoint with the order items data in 
 Make sure to adjust the endpoint URL and other parameters according to your specific server-side implementation.
 
 Note: In the example above, only the order items data is shown. You may need to include additional fields in the request body, such as user details, shipping address, and payment method, depending on your application requirements.
+
+
+
+--------------------------------------------
+place order
+{
+  "pickup_location": "Location A",
+  "dropoff_location": "Location B",
+  "total_amount": 100.00,
+  "items": [
+    {
+      "name": "Item 1",
+      "image": "https://example.com/item1.jpg"
+    },
+    {
+      "name": "Item 2",
+      "image": "https://example.com/item2.jpg"
+    }
+  ]
+}
+
+--------------------------------------------------------
+$order = Order::with('items')->find($orderId);

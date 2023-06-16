@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use Illuminate\Http\Request;
@@ -68,6 +69,7 @@ class OrderController extends Controller
                 'code' => 500,
                 'data' => [],
                 'message' => 'Something went wrong',
+                'sql_error' => $th->getMessage(),
             ], 500, [], JSON_FORCE_OBJECT);
         }
     }
@@ -197,6 +199,138 @@ class OrderController extends Controller
                 'code' => 500,
                 'data' => [],
                 'message' => 'Something went wrong',
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function getOrderWithDetails(Request $request)
+    {
+
+        try {
+            $rules = array(
+                'orderId'  => 'required',
+            );
+            $messages = [
+                'orderId.required' => 'order id required',
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                $messages = $validator->errors()->all();
+                $msg = $messages[0];
+                return response()->json([
+                    'status' => false,
+                    'code' => 401,
+                    'data' => [],
+                    'message' => $msg
+                ], 401, [], JSON_FORCE_OBJECT);
+            } else {
+                $order = Order::with('merchant.categories')->findOrFail($request->orderId);
+                $products = $order->orderItems->map(function ($item) {
+                    return $item->product;
+                });
+
+                $totalPrice = 0;
+                $data = [
+                    'order' => $order->only(['id', 'order_number', 'user_id', 'merchant_id', 'total_amount', 'status', 'created_at', 'updated_at']),
+                    'merchant' => [
+                        'id' => $order->merchant->id,
+                        'name' => $order->merchant->name,
+                        'profile_image' => asset('public/profile_image/' . $order->merchant->profile_image),
+                        'merchant_categories' => $order->merchant->categories->pluck('category_name'),
+                    ],
+
+                    'products' => $order->orderItems->map(function ($item) use (&$totalPrice) {
+                        $productSubtotal = $item->quantity * $item->product->price;
+                        $subItemsPrice = $item->product->subItems->sum('price');
+                        $subtotal = $productSubtotal + $subItemsPrice;
+                        $totalPrice += $subtotal;
+                        return [
+                            'id' => $item->product->id,
+                            'name' => $item->product->name,
+                            'image' => asset('public/product/' . $item->product->image),
+                            'price' => $item->product->price,
+                            'description' => $item->product->description,
+                            'quantity' => $item->quantity,
+                            'sub_items' => $item->product->subItems->map(function ($subItem) {
+                                return [
+                                    'id' => $subItem->id,
+                                    'name' => $subItem->name,
+                                    'price' => $subItem->price,
+                                ];
+                            }),
+
+                        ];
+                    }),
+                    'subtotal' => $totalPrice,
+                ];
+
+                return response()->json([
+                    'status' => true,
+                    'code' => 200,
+                    'data' => $data,
+                    'message' => 'order get successfully'
+                ], 200);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function courierPlaceOrder(Request $request)
+    {
+        try {
+            $rules = array(
+                'pickup_location'  => 'required',
+                'dropoff_location '  => 'required',
+                'total_amount'  => 'required'
+            );
+            $messages = [
+                'dropoff_location.required' => 'pickup location required',
+                'pickup_location.required' => 'dropoff location',
+                'total_amount' => 'total amount required'
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                $messages = $validator->errors()->all();
+                $msg = $messages[0];
+                return response()->json([
+                    'status' => false,
+                    'code' => 401,
+                    'data' => [],
+                    'message' => $msg
+                ], 401, [], JSON_FORCE_OBJECT);
+            } else {
+                $order = new Order();
+                $order->user_id = Auth::user()->id;
+                $order->pickup_location = $request->input('pickup_location');
+                $order->dropoff_location = $request->input('dropoff_location');
+                $order->total_amount = $request->input('total_amount');
+                $order->status =  0;
+                $order->save();
+
+                $items = $request->input('items');
+
+                foreach ($items as $itemData) {
+                    $item = new Item();
+                    $item->name = $itemData['name'];
+                    $item->image = $itemData['image'];
+                    $order->items()->save($item);
+                }
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+                'sql_error' => $th->getMessage()
             ], 500, [], JSON_FORCE_OBJECT);
         }
     }

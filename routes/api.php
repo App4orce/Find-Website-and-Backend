@@ -43,8 +43,21 @@ Route::prefix('v1')->group(function () {
             Route::get("discounts", [\App\Http\Controllers\Api\HomeController::class, 'discounts']);
             Route::post("rate/order", [\App\Http\Controllers\Api\HomeController::class, 'rateOrder'])->middleware('auth:sanctum');
             Route::post("place/order", [\App\Http\Controllers\Api\OrderController::class, 'placeOrder'])->middleware('auth:sanctum');
+            Route::post("courier/place/order", [\App\Http\Controllers\Api\OrderController::class, 'courierPlaceOrder'])->middleware('auth:sanctum');
             Route::get("order/detail", [\App\Http\Controllers\Api\OrderController::class, 'orderDetail'])->middleware('auth:sanctum');
             Route::get("activeOrder", [\App\Http\Controllers\Api\OrderController::class, 'activeOrder'])->middleware('auth:sanctum');
+            Route::get("orderdetail", [\App\Http\Controllers\Api\OrderController::class, 'getOrderWithDetails'])->middleware('auth:sanctum');
+
+            Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
+        });
+    });
+
+    Route::prefix('provider')->group(function () {
+        Route::middleware(ChangeLocale::class)->group(function (): void {
+            Route::post("verifyOtp", [\App\Http\Controllers\Api\AuthController::class, 'verifyProviderOtp']);
+            Route::post("login", [\App\Http\Controllers\Api\AuthController::class, 'deliveryProviderLogin']);
+            Route::post("forgetPassword", [\App\Http\Controllers\Api\AuthController::class, 'forgetPassword']);
+
 
             Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });

@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('order_number')->unique();
             $table->unsignedBigInteger('user_id');
-            $table->integer('merchant_id');
+            $table->integer('merchant_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->char('pickup_location')->nullable();
+            $table->char('dropoff_location')->nullable();
             $table->decimal('total_amount', 10, 2);
             $table->integer('status')->default(0);
             $table->timestamps();

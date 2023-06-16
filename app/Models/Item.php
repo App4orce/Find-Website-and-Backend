@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderDetail extends Model
+class Item extends Model
 {
     use HasFactory;
-    public function product()
+
+
+    public function order()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Order::class);
     }
 }
