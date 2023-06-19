@@ -47,7 +47,8 @@ Route::prefix('v1')->group(function () {
             Route::get("order/detail", [\App\Http\Controllers\Api\OrderController::class, 'orderDetail'])->middleware('auth:sanctum');
             Route::get("activeOrder", [\App\Http\Controllers\Api\OrderController::class, 'activeOrder'])->middleware('auth:sanctum');
             Route::get("orderdetail", [\App\Http\Controllers\Api\OrderController::class, 'getOrderWithDetails'])->middleware('auth:sanctum');
-
+            Route::get("notifications", [\App\Http\Controllers\Api\HomeController::class, 'notifications'])->middleware('auth:sanctum');
+            Route::get("city", [\App\Http\Controllers\Api\HomeController::class, 'getCities']);
             Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
     });

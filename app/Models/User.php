@@ -93,4 +93,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class, 'merchant_id');
     }
+
+    public function packages()
+    {
+        return $this->belongsToMany(Package::class);
+    }
 }

@@ -55,7 +55,7 @@ class AuthController extends Controller
                 'status' => true,
                 'code' => 200,
                 'data' => $data,
-                'message' => 'otp sent successfully to number'.' '.$request->phone
+                'message' => 'otp sent successfully to number' . ' ' . $request->phone
             ];
 
             return response()->json($response, 200);
@@ -197,7 +197,7 @@ class AuthController extends Controller
             'status' => true,
             'code' => 200,
             'data' => $data,
-            'message' => 'otp sent successfully to number'.' '.$request->phone
+            'message' => 'otp sent successfully to number' . ' ' . $request->phone
         ];
 
         return response()->json($response, 201);
@@ -342,7 +342,7 @@ class AuthController extends Controller
                         'status' => true,
                         'code' => 200,
                         'data' => $data,
-                        'message' => 'otp sent successfully to number'.' '.$request->phone
+                        'message' => 'otp sent successfully to number' . ' ' . $request->phone
                     ], 200, [], JSON_FORCE_OBJECT);
                 } else {
                     return response()->json([
@@ -363,5 +363,19 @@ class AuthController extends Controller
 
             ], 500, [], JSON_FORCE_OBJECT);
         }
+    }
+
+    public function logout()
+    {
+        $user = request()->user(); //or Auth::user()
+
+        // Revoke current user token
+        $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
+        return response()->json([
+            'status' => true,
+            'code' => 200,
+            'data' => [],
+            'message' => 'Logout statusfull'
+        ], 200, [], JSON_FORCE_OBJECT);
     }
 }

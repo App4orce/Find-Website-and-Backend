@@ -287,13 +287,13 @@ class OrderController extends Controller
         try {
             $rules = array(
                 'pickup_location'  => 'required',
-                'dropoff_location '  => 'required',
+                'dropoff_location'  => 'required',
                 'total_amount'  => 'required'
             );
             $messages = [
-                'dropoff_location.required' => 'pickup location required',
-                'pickup_location.required' => 'dropoff location',
-                'total_amount' => 'total amount required'
+                'dropoff_location.required' => 'dropoff location is required',
+                'pickup_location.required' => 'pickup location is required',
+                'total_amount' => 'total amount is required'
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -309,6 +309,7 @@ class OrderController extends Controller
             } else {
                 $order = new Order();
                 $order->user_id = Auth::user()->id;
+                $order->order_number =  rand(10000, 99999);
                 $order->pickup_location = $request->input('pickup_location');
                 $order->dropoff_location = $request->input('dropoff_location');
                 $order->total_amount = $request->input('total_amount');
@@ -323,6 +324,13 @@ class OrderController extends Controller
                     $item->image = $itemData['image'];
                     $order->items()->save($item);
                 }
+
+                return response()->json([
+                    'status' => true,
+                    'code' => 200,
+                    'data' => [],
+                    'message' => 'order placed successfully'
+                ],200 , [] ,JSON_FORCE_OBJECT);
             }
         } catch (\Throwable $th) {
             return response()->json([

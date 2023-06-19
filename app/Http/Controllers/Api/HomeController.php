@@ -12,6 +12,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\DeliveryAddress;
 use App\Models\Order;
+use App\Models\Package;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\Support;
@@ -515,7 +516,7 @@ class HomeController extends Controller
                     'restaurant_details' => $restaurantDetails,
                     'items' => $itemDetails,
                     'subamount' => $subamount, // Include the total amount in the response
-                    'deliveryfee' => 0, 
+                    'deliveryfee' => 0,
                     'total' => $deliveryfee + $subamount
                 ];
             }
@@ -1060,5 +1061,62 @@ class HomeController extends Controller
         }
     }
 
-    
+    public function notifications(Request $request)
+    {
+        $user = $request->user();
+        $notifications = $user->notifications;
+        $data = [
+            'notifications' => $notifications
+        ];
+
+        return response()->json([
+            'status' => true,
+            'code' => 200,
+            'data' => $data,
+            'message' => 'get notifications successfully'
+        ], 200, [], JSON_FORCE_OBJECT);
+    }
+
+    public function getAllPackages(Request $request)
+    {
+        try {
+            $packages = Package::with('benefits','restaurants')->get();
+            $data = [
+                'packages' =>  $packages
+            ];
+            return response()->json([
+                'status' => true,
+                'code' => 200,
+                'data' => $data,
+                'message' => 'get packages successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function addSubscription(Request $request)
+    {
+        try {
+            $subscription = Subscription::create($request->all());
+            return response()->json([
+                'status' => true,
+                'code' => 200,
+                'data' => [],
+                'message' => 'subscription added successfully'
+            ], 200, [], JSON_FORCE_OBJECT);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
 }
