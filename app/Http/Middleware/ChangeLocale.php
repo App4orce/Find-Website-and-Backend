@@ -16,8 +16,8 @@ class ChangeLocale
      */
     public function handle(Request $request, Closure $next)
     {
-        $locale = $request->query('lang');
-
+        $locale = $request->header('lang');
+           
         if ($locale) {
             app()->setLocale($locale);
         }

@@ -8,7 +8,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\ModelNotFoundException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Illuminate\Auth\AuthenticationException;
 
+
+ 
 class Handler extends ExceptionHandler
 {
     /**
@@ -44,6 +48,17 @@ class Handler extends ExceptionHandler
                 'code' => 404,
                 'data'=>[],
 				'message' => 'The specified URL cannot be found',
+				
+			],404,[],JSON_FORCE_OBJECT);
+
+        });
+
+        $this->renderable(function (TokenExpiredException $e, $request) {
+            return response()->json([
+				'status' => false,
+                'code' => 404,
+                'data'=>[],
+				'message' => 'Token expired',
 				
 			],404,[],JSON_FORCE_OBJECT);
 
@@ -92,6 +107,18 @@ class Handler extends ExceptionHandler
 			],500,[],JSON_FORCE_OBJECT);
 
         });
+
+        $this->renderable(function (AuthenticationException   $e, $request) {
+            return response()->json([
+				'status' => false,
+                'code' => 500,
+                'data'=>[],
+				'message' => 'Authentication failed',
+				
+			],500,[],JSON_FORCE_OBJECT);
+
+        });
+
 
         $this->renderable(function (Exception   $e, $request) {
             return response()->json([

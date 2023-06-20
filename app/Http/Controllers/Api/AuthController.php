@@ -18,7 +18,7 @@ class AuthController extends Controller
 
         );
         $messages = [
-            'phone.required' => 'Phone is required',
+            'phone.required' => trans('custommessage.phone.required'),
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -55,7 +55,7 @@ class AuthController extends Controller
                 'status' => true,
                 'code' => 200,
                 'data' => $data,
-                'message' => 'otp sent successfully to number' . ' ' . $request->phone
+                'message' => __('custommessage.otp.sent_success', ['phone' => $request->phone]),
             ];
 
             return response()->json($response, 200);
@@ -74,9 +74,9 @@ class AuthController extends Controller
 
             );
             $messages = [
-                'otp.required' => 'OTP is required',
-                'phone.required' => 'Phone is required',
-                'phone.regex' => 'The phone format is invalid. The correct phone format is 05xxxxxxxx',
+                'otp.required' => __('custommessage.otp.require'),
+                'phone.required' => __('custommessage.phone.required'),
+                'phone.regex' =>  __('custommessage.phone.regex'),
 
             ];
 
@@ -115,7 +115,7 @@ class AuthController extends Controller
                             'code' => 200,
                             'data' => $data,
                             'token' =>  $token,
-                            'message' => 'LogedIn successfully'
+                            'message' => __('custommessage.LogedInmessage')
                         ];
 
                         return response()->json($response, 200);
@@ -124,7 +124,7 @@ class AuthController extends Controller
                             'status' => false,
                             'code' => 404,
                             'data' => [],
-                            'message' => 'invalid otp'
+                            'message' => __('custommessage.invalidotp')
                         ], 404, [], JSON_FORCE_OBJECT);
                     }
                 } else {
@@ -132,14 +132,14 @@ class AuthController extends Controller
                         'status' => false,
                         'code' => 404,
                         'data' => [],
-                        'message' => 'Ivalid phone number'
+                        'message' =>__('custommessage.otp.invalid')
                     ], 404, [], JSON_FORCE_OBJECT);
                 }
                 return response()->json([
                     'status' => true,
                     'code' => 200,
                     'data' => [],
-                    'message' => 'Your account is created successfully'
+                    'message' => __('custommessage.account.create')
                 ], 200, [], JSON_FORCE_OBJECT);
             }
         } catch (\Throwable $th) {
@@ -165,7 +165,7 @@ class AuthController extends Controller
                 'staus' => false,
                 'code' => 401,
                 'data' => [],
-                'message' => ['These credentials do not match our records.']
+                'message' => [__('custommessage.invalid_credentials')]
             ], 401, [], JSON_FORCE_OBJECT);
         }
 
@@ -180,7 +180,7 @@ class AuthController extends Controller
                 'status' => false,
                 'code' => 401,
                 'data' => [],
-                'message' => 'Your account is under review by admin'
+                'message' => __('custommessage.account_under_review')
             ], 401, [], JSON_FORCE_OBJECT);
         }
 
@@ -197,7 +197,7 @@ class AuthController extends Controller
             'status' => true,
             'code' => 200,
             'data' => $data,
-            'message' => 'otp sent successfully to number' . ' ' . $request->phone
+            'message' => __('custommessage.otp.sent_success', ['phone' => $request->phone]),
         ];
 
         return response()->json($response, 201);
@@ -215,10 +215,9 @@ class AuthController extends Controller
 
             );
             $messages = [
-                'otp.required' => 'OTP is required',
-                'phone.required' => 'Phone is required',
-                'phone.regex' => 'The phone format is invalid. The correct phone format is 05xxxxxxxx',
-
+                'otp.required' => __('custommessage.otp.require'),
+                'phone.required' => __('custommessage.phone.required'),
+                'phone.regex' =>  __('custommessage.phone.regex'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -256,7 +255,7 @@ class AuthController extends Controller
                             'code' => 200,
                             'data' => $data,
                             'token' =>  $token,
-                            'message' => 'LogedIn successfully'
+                            'message' => __('custommessage.LogedInmessage')
                         ];
 
                         return response()->json($response, 200);
@@ -265,7 +264,7 @@ class AuthController extends Controller
                             'status' => false,
                             'code' => 404,
                             'data' => [],
-                            'message' => 'invalid otp'
+                            'message' => __('custommessage.invalidotp')
                         ], 404, [], JSON_FORCE_OBJECT);
                     }
                 } else {
@@ -273,14 +272,14 @@ class AuthController extends Controller
                         'status' => false,
                         'code' => 404,
                         'data' => [],
-                        'message' => 'Ivalid phone number'
+                        'message' => __('custommessage.otp.invalid')
                     ], 404, [], JSON_FORCE_OBJECT);
                 }
                 return response()->json([
                     'status' => true,
                     'code' => 200,
                     'data' => [],
-                    'message' => 'Your account is created successfully'
+                    'message' => __('custommessage.account.create')
                 ], 200, [], JSON_FORCE_OBJECT);
             }
         } catch (\Throwable $th) {
@@ -308,8 +307,9 @@ class AuthController extends Controller
             );
             $messages = [
 
-                'phone.required' => 'Phone is required',
-                'phone.regex' => 'The phone format is invalid. The correct phone format is 05xxxxxxxx',
+                'phone.required' => __('custommessage.phone.required'),
+                'phone.regex' =>  __('custommessage.phone.regex'),
+
 
             ];
 
@@ -342,14 +342,14 @@ class AuthController extends Controller
                         'status' => true,
                         'code' => 200,
                         'data' => $data,
-                        'message' => 'otp sent successfully to number' . ' ' . $request->phone
+                        'message' => __('custommessage.otp.sent_success', ['phone' => $request->phone]),
                     ], 200, [], JSON_FORCE_OBJECT);
                 } else {
                     return response()->json([
                         'status' => false,
                         'code' => 404,
                         'data' => [],
-                        'message' => 'Ivalid phone number'
+                        'message' => __('custommessage.phone.invalid')
                     ], 404, [], JSON_FORCE_OBJECT);
                 }
             }
@@ -375,7 +375,7 @@ class AuthController extends Controller
             'status' => true,
             'code' => 200,
             'data' => [],
-            'message' => 'Logout statusfull'
+            'message' => __('custommessage.logoutmessage')
         ], 200, [], JSON_FORCE_OBJECT);
     }
 }

@@ -15,6 +15,7 @@ use App\Models\Order;
 use App\Models\Package;
 use App\Models\Product;
 use App\Models\Review;
+use App\Models\Subscription;
 use App\Models\Support;
 use Illuminate\Http\Request;
 use Auth;
@@ -346,7 +347,7 @@ class HomeController extends Controller
             );
 
             $messages = [
-                'id.required' => 'Merchant ID required',
+                'id.required' =>  __('custommessage.id.merchant.required'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -377,7 +378,7 @@ class HomeController extends Controller
                         'status' => false,
                         'code' => 404,
                         'data' => [],
-                        'message' => 'Merchant not found'
+                        'message' => __('custommessage.merchantnotfound')
                     ], 404, [], JSON_FORCE_OBJECT);
                 }
                 $reviewsCount = $merchant->reviews->count();
@@ -430,7 +431,7 @@ class HomeController extends Controller
                 'id'  => 'required',   //product id
             );
             $messages = [
-                'id.required' => 'Product id  required',
+                'id.required' =>  __('custommessage.id.product.required'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -562,7 +563,7 @@ class HomeController extends Controller
                     'status' => false,
                     'code' => 400,
                     'data' => [],
-                    'message' => 'Item already exists in the cart',
+                    'message' => __('custommessage.item_exist'),
                 ], 400);
             } else {
                 $cartItem = new CartItem();
@@ -576,7 +577,7 @@ class HomeController extends Controller
                 'status' => true,
                 'code' => 200,
                 'data' => [],
-                'message' => 'Item added to cart successfully',
+                'message' =>  __('custommessage.item_added'),
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -600,10 +601,10 @@ class HomeController extends Controller
                 'comments'  => 'required',
             );
             $messages = [
-                'name.required' => 'name is  required',
-                'email.required' => 'email is  required',
-                'phone.required' => 'phone is  required',
-                'comments.required' => 'comment is  required',
+                'name.required' => __('custommessage.name'),
+                'email.required' => __('custommessage.email'),
+                'phone.required' =>  __('custommessage.phone'),
+                'comments.required' =>  __('custommessage.comments'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -628,7 +629,7 @@ class HomeController extends Controller
                     'status' => true,
                     'code' => 200,
                     'data' => [],
-                    'message' => 'Your request has sent successfully',
+                    'message' =>  __('custommessage.requestsent'),
                 ], 200, [], JSON_FORCE_OBJECT);
             }
         } catch (\Throwable $th) {
@@ -650,7 +651,7 @@ class HomeController extends Controller
                 'status' => true,
                 'code' => 200,
                 'data' => [],
-                'message' => 'User Deleted',
+                'message' =>   __('custommessage.deleteaccount')
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -674,10 +675,10 @@ class HomeController extends Controller
                 'address'  => 'required',
             );
             $messages = [
-                'latitude.required' => 'latitude is  required',
-                'longitude.required' => 'longitude is  required',
-                'location.required' => 'location is  required',
-                'address.required' => 'address is  required',
+                'latitude.required' => __('custommessage.latitude'),
+                'longitude.required' =>  __('custommessage.longitude'),
+                'location.required' =>  __('custommessage.location'),
+                'address.required' =>  __('custommessage.address'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -702,7 +703,7 @@ class HomeController extends Controller
                     'status' => true,
                     'code' => 200,
                     'data' => [],
-                    'message' => 'Your adsress has added successfully',
+                    'message' =>  __('custommessage.address'),
                 ], 200, [], JSON_FORCE_OBJECT);
             }
         } catch (\Throwable $th) {
@@ -727,7 +728,7 @@ class HomeController extends Controller
                 'status' => true,
                 'code' => 200,
                 'data' => $data,
-                'message' => 'Delivery address list get sussessfully',
+                'message' => __('custommessage.address.add'),
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -749,7 +750,7 @@ class HomeController extends Controller
 
             );
             $messages = [
-                'id.required' => 'address id  required',
+                'id.required' =>  __('custommessage.id.address.required'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -769,14 +770,14 @@ class HomeController extends Controller
                         'status' => true,
                         'code' => 200,
                         'data' => [],
-                        'message' => 'Address deleted successfully',
+                        'message' => __('custommessage.address.delete'),
                     ], 200);
                 } else {
                     return response()->json([
                         'status' => false,
                         'code' => 400,
                         'data' => [],
-                        'message' => 'No address found',
+                        'message' => __('custommessage.address.notfound'),
                     ], 400);
                 }
             }
@@ -842,9 +843,9 @@ class HomeController extends Controller
 
             );
             $messages = [
-                'name.required' => 'name is required',
-                'email.required' => 'email is required',
-                'profile_image.required' => 'profile image is required',
+                'name.required' => __('custommessage.name.profile.required'),
+                'email.required' => __('custommessage.name.profile.email'),
+                'profile_image.required' => __('custommessage.name.profile.profile_image'),
 
             ];
 
@@ -879,7 +880,7 @@ class HomeController extends Controller
 
 
 
-                $message = "Your profile updated successfully";
+                $message = __('custommessage.profile.update');
 
 
                 return response()->json([
@@ -1020,9 +1021,9 @@ class HomeController extends Controller
 
             );
             $messages = [
-                'user_to.required' => 'merchant id required',
-                'review.required' => 'Please give text review',
-                'rate.required' => 'star review is required',
+                'user_to.required' =>  __('custommessage.user_to.required'),
+                'review.required' => __('custommessage.review.required'),
+                'rate.required' => __('custommessage.rate.required'),
 
             ];
 
@@ -1048,7 +1049,7 @@ class HomeController extends Controller
                     'status' => true,
                     'code' => 200,
                     'data' => [],
-                    'message' => 'Review added successfully'
+                    'message' =>  __('custommessage.review.add'),
                 ], 200, [], JSON_FORCE_OBJECT);
             }
         } catch (\Throwable $th) {
@@ -1080,15 +1081,41 @@ class HomeController extends Controller
     public function getAllPackages(Request $request)
     {
         try {
-            $packages = Package::with('benefits','restaurants')->get();
+            $packages = Package::with('benefits:package_id,benefit_name', 'restaurants:id,name,profile_image')->get();
+
+            // Manipulate the packages data
+            $manipulatedPackages = $packages->map(function ($package) {
+                // Access the benefits relation
+                $benefits = $package->benefits;
+                $benefitNames = $benefits->pluck('benefit_name');
+                $package->benefit_names = $benefitNames;
+
+                // Access the restaurants relation
+                $restaurants = $package->restaurants;
+                $restaurantData = $restaurants->map(function ($restaurant) {
+                    return [
+                        'id' => $restaurant->id,
+                        'name' => $restaurant->name,
+                        'profile_image' => asset('public/profile_image/' . $restaurant->profile_image),
+                    ];
+                });
+                $package->restaurants_data = $restaurantData;
+
+                // Remove the original relations if not needed
+                unset($package->benefits);
+                unset($package->restaurants);
+
+                return $package;
+            });
+
             $data = [
-                'packages' =>  $packages
+                'packages' => $manipulatedPackages
             ];
             return response()->json([
                 'status' => true,
                 'code' => 200,
                 'data' => $data,
-                'message' => 'get packages successfully'
+                'message' => 'Successfully retrieved and manipulated packages',
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -1096,26 +1123,58 @@ class HomeController extends Controller
                 'code' => 500,
                 'data' => [],
                 'message' => 'Something went wrong',
+                'sql_error' => $th->getMessage(),
             ], 500, [], JSON_FORCE_OBJECT);
         }
     }
 
+
     public function addSubscription(Request $request)
     {
         try {
-            $subscription = Subscription::create($request->all());
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'data' => [],
-                'message' => 'subscription added successfully'
-            ], 200, [], JSON_FORCE_OBJECT);
+
+            $rules = array(
+                'package_id' => 'required',
+                'amount' => 'required',
+
+            );
+            $messages = [
+                'package_id.required' => __('custommessage.package_id.required'),
+                'amount.required' =>  __('custommessage.amount'),
+
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                $messages = $validator->errors()->all();
+                $msg = $messages[0];
+                return response()->json([
+                    'status' => false,
+                    'code' => 401,
+                    'data' => [],
+                    'message' => $msg
+                ], 401, [], JSON_FORCE_OBJECT);
+            } else {
+
+                $sub = new Subscription();
+                $sub->user_id = Auth::user()->id;
+                $sub->package_id = $request->package_id;
+                $sub->amount = $request->amount;
+                $sub->save();
+                return response()->json([
+                    'status' => true,
+                    'code' => 200,
+                    'data' => [],
+                    'message' => 'Subscription Added Successfully',
+                ], 200 ,[],JSON_FORCE_OBJECT);
+            }
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'code' => 500,
                 'data' => [],
                 'message' => 'Something went wrong',
+                'sql_error' => $th->getMessage(),
             ], 500, [], JSON_FORCE_OBJECT);
         }
     }
