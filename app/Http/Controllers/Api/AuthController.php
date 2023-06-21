@@ -132,7 +132,7 @@ class AuthController extends Controller
                         'status' => false,
                         'code' => 404,
                         'data' => [],
-                        'message' =>__('custommessage.otp.invalid')
+                        'message' => __('custommessage.otp.invalid')
                     ], 404, [], JSON_FORCE_OBJECT);
                 }
                 return response()->json([
@@ -156,51 +156,76 @@ class AuthController extends Controller
 
     public function deliveryProviderLogin(Request $request)
     {
-        $user = User::select('id', 'role', 'status', 'password', 'phone')->where('phone', $request->phone)->first();
+        $rules = array(
+            'password' => ['required','min:8'],
+            'phone' => ['required', 'max:10', 'regex:/(05)[0-9]{8}/', 'not_regex:/[a-z]/'],
 
 
-        // print_r($data);
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response([
-                'staus' => false,
-                'code' => 401,
-                'data' => [],
-                'message' => [__('custommessage.invalid_credentials')]
-            ], 401, [], JSON_FORCE_OBJECT);
-        }
+        );
+        $messages = [
+            'otp.required' => __('custommessage.otp.require'),
+            'password.required' => __('custommessage.phone.required'),
+            'password.min' => __('custommessage.password.min'),
 
-        // User::where('id', $user->id)->update([
-        //     'fcm_token' => $request->fcm_token
-        // ]);
+        ];
 
-
-
-        if ($user->status == 0) {
-            return response([
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            $messages = $validator->errors()->all();
+            $msg = $messages[0];
+            return response()->json([
                 'status' => false,
-                'code' => 401,
+                'code' => 404,
                 'data' => [],
-                'message' => __('custommessage.account_under_review')
-            ], 401, [], JSON_FORCE_OBJECT);
+                'message' => $msg
+            ], 404, [], JSON_FORCE_OBJECT);
+        } else {
+            $user = User::select('id', 'role', 'status', 'password', 'phone')->where('phone', $request->phone)->where('role', 4)->first();
+
+
+            // print_r($data);
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return response([
+                    'staus' => false,
+                    'code' => 401,
+                    'data' => [],
+                    'message' => [__('custommessage.invalid_credentials')]
+                ], 401, [], JSON_FORCE_OBJECT);
+            }
+
+            // User::where('id', $user->id)->update([
+            //     'fcm_token' => $request->fcm_token
+            // ]);
+
+
+
+            if ($user->status == 0) {
+                return response([
+                    'status' => false,
+                    'code' => 401,
+                    'data' => [],
+                    'message' => __('custommessage.account_under_review')
+                ], 401, [], JSON_FORCE_OBJECT);
+            }
+
+            $otp = rand(10000, 99999);
+            User::where('id', $user->id)->update([
+                'otp' => $otp
+            ]);
+
+            //$token = $user->createToken('my-app-token')->plainTextToken;
+            $data = [
+                'otp' => $otp
+            ];
+            $response = [
+                'status' => true,
+                'code' => 200,
+                'data' => $data,
+                'message' => __('custommessage.otp.sent_success', ['phone' => $request->phone]),
+            ];
+
+            return response()->json($response, 201);
         }
-
-        $otp = rand(10000, 99999);
-        User::where('id', $user->id)->update([
-            'otp' => $otp
-        ]);
-
-        //$token = $user->createToken('my-app-token')->plainTextToken;
-        $data = [
-            'otp' => $otp
-        ];
-        $response = [
-            'status' => true,
-            'code' => 200,
-            'data' => $data,
-            'message' => __('custommessage.otp.sent_success', ['phone' => $request->phone]),
-        ];
-
-        return response()->json($response, 201);
     }
 
     public function verifyProviderOtp(Request $request)

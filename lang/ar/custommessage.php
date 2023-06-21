@@ -48,4 +48,6 @@ return [
     'review.add' => 'تمت إضافة التقييم بنجاح.',
     'package_id.required' => 'معرف الباقة مطلوب.',
     'amount.required' => 'المبلغ مطلوب.',
+    'password.min' => 'المبلغ مطلوب.',
+    'password.min' => 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل'
 ];

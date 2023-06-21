@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
             Route::get("getMerchantDetail", [\App\Http\Controllers\Api\HomeController::class, 'getMerchantDetail']);
             Route::get("getProductSubItems", [\App\Http\Controllers\Api\HomeController::class, 'getProductSubItems']);
             Route::get("getCartItems", [\App\Http\Controllers\Api\HomeController::class, 'getCartItems'])->middleware('auth:sanctum');
+            Route::get("getCartById", [\App\Http\Controllers\Api\HomeController::class, 'getCartById'])->middleware('auth:sanctum');
             Route::post("addCart", [\App\Http\Controllers\Api\HomeController::class, 'addCart'])->middleware('auth:sanctum');
             Route::post("support", [\App\Http\Controllers\Api\HomeController::class, 'addSupport'])->middleware('auth:sanctum');
             Route::post("delete/account", [\App\Http\Controllers\Api\HomeController::class, 'deleteAcount'])->middleware('auth:sanctum');
@@ -60,6 +61,8 @@ Route::prefix('v1')->group(function () {
             Route::post("verifyOtp", [\App\Http\Controllers\Api\AuthController::class, 'verifyProviderOtp']);
             Route::post("login", [\App\Http\Controllers\Api\AuthController::class, 'deliveryProviderLogin']);
             Route::post("forgetPassword", [\App\Http\Controllers\Api\AuthController::class, 'forgetPassword']);
+            Route::post("onlineStatus", [\App\Http\Controllers\Api\ProviderController::class, 'onlineStatus'])->middleware('auth:sanctum');
+            Route::post("acceptOrder", [\App\Http\Controllers\Api\ProviderController::class, 'acceptOrder'])->middleware('auth:sanctum');
 
 
             Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');

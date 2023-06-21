@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -17,9 +18,11 @@ class OrderController extends Controller
         try {
             $rules = array(
                 'merchant_id'  => 'required',
+                'cart_id'  => 'required',
             );
             $messages = [
                 'merchant_id.required' => 'merchant id required',
+                'cart_id.required' => 'cart id is required',
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -55,6 +58,8 @@ class OrderController extends Controller
                         $orderItem->save();
                     }
                 }
+
+                Cart::where('id',$request->cart_id)->delete();
 
                 return response()->json([
                     'status' => true,

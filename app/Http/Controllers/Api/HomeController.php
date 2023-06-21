@@ -491,6 +491,7 @@ class HomeController extends Controller
                 $restaurant = $cart->restaurant;
 
                 $restaurantDetails = [
+                    'id' => $restaurant->id,
                     'name' => $restaurant->name,
                     'image' => url('public/profile_image/' . $restaurant->profile_image),
                     'item_count' => $cartItems->count() // Add item count to the restaurant details
@@ -504,9 +505,11 @@ class HomeController extends Controller
 
                 $itemDetails = $cartItems->map(function ($product) {
                     return [
+                        'id'=> $product->product->id,
                         'name' => $product->product->name,
                         'price' => $product->product->price,
                         'description' => $product->product->description,
+                        'image' =>  asset('public/product/' . $product->product->image),
                         'quantity' => $product->quantity,
                         // Add more product details as needed
                     ];
@@ -514,6 +517,7 @@ class HomeController extends Controller
 
                 $deliveryfee = 0;
                 $responseData[] = [
+                    'id' => $cart->id,    // cart id
                     'restaurant_details' => $restaurantDetails,
                     'items' => $itemDetails,
                     'subamount' => $subamount, // Include the total amount in the response
@@ -538,6 +542,79 @@ class HomeController extends Controller
             ], 500);
         }
     }
+
+
+    // get cart by id
+    public function getCartById(Request $request)
+    {
+        try {
+            $cart = Cart::with('cartItems.product', 'restaurant')->find($request->id);
+
+            if (!$cart) {
+                return response()->json([
+                    'status' => false,
+                    'code' => 404,
+                    'data' => [],
+                    'message' => 'Cart not found'
+                ], 404);
+            }
+
+            $cartItems = $cart->cartItems;
+            $restaurant = $cart->restaurant;
+
+            $restaurantDetails = [
+                'id' => $restaurant->id,
+                'name' => $restaurant->name,
+                'image' => url('public/profile_image/' . $restaurant->profile_image),
+                'item_count' => $cartItems->count() // Add item count to the restaurant details
+                // Add more restaurant details as needed
+            ];
+
+            $subamount = $cartItems->sum(function ($item) {
+                return $item->quantity * $item->product->price;
+            });
+
+            $itemDetails = $cartItems->map(function ($product) {
+                return [
+                    'id'=> $product->product->id,
+                    'name' => $product->product->name,
+                    'price' => $product->product->price,
+                    'description' => $product->product->description,
+                    'quantity' => $product->quantity,
+                    'image' =>  asset('public/product/' . $product->product->image),
+                    // Add more product details as needed
+                ];
+            })->toArray();
+
+            $deliveryfee = 0;
+            $total = $deliveryfee + $subamount;
+
+            $responseData = [
+                'id' => $cart->id,    // cart id
+                'restaurant_details' => $restaurantDetails,
+                'items' => $itemDetails,
+                'subamount' => $subamount,
+                'deliveryfee' => $deliveryfee,
+                'total' => $total
+            ];
+
+            return response()->json([
+                'status' => true,
+                'code' => 200,
+                'data' => $responseData,
+                'message' => 'Cart item listed successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+                'sql_error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
 
 
 
@@ -1166,7 +1243,7 @@ class HomeController extends Controller
                     'code' => 200,
                     'data' => [],
                     'message' => 'Subscription Added Successfully',
-                ], 200 ,[],JSON_FORCE_OBJECT);
+                ], 200, [], JSON_FORCE_OBJECT);
             }
         } catch (\Throwable $th) {
             return response()->json([

@@ -27,6 +27,7 @@ return new class extends Migration
             $table->integer('online_status')->default(0);
             $table->integer('city_id')->nullable();
             $table->integer('otp')->nullable();
+            $table->integer('isFree')->nullable()->default(0);
             $table->integer('category_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();

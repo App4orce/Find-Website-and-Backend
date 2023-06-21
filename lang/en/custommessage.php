@@ -42,12 +42,13 @@ return [
 	'name.profile.required' => 'name is required',
 	'name.profile.email' => 'email is required',
 	'name.profile.profile_image' => 'profile image is required',
-	'profile.update' => 'Your profile updated successfully'
+	'profile.update' => 'Your profile updated successfully',
 	'user_to.required' => 'merchant id required',
 	'review.required' => 'Please give text review',
 	'rate.required' => 'star review is required',
 	'review.add' => 'Review added successfully',
 	'package_id.required' => 'package id is required',
 	'amount.required' => 'Amount is required',
+	'password.min' => 'Password should be 8 characters long',
 	
 ];
