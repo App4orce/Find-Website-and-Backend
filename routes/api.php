@@ -61,11 +61,18 @@ Route::prefix('v1')->group(function () {
             Route::post("verifyOtp", [\App\Http\Controllers\Api\AuthController::class, 'verifyProviderOtp']);
             Route::post("login", [\App\Http\Controllers\Api\AuthController::class, 'deliveryProviderLogin']);
             Route::post("forgetPassword", [\App\Http\Controllers\Api\AuthController::class, 'forgetPassword']);
-            Route::post("onlineStatus", [\App\Http\Controllers\Api\ProviderController::class, 'onlineStatus'])->middleware('auth:sanctum');
+            Route::post("goOnline", [\App\Http\Controllers\Api\ProviderController::class, 'goOnline'])->middleware('auth:sanctum')->middleware('onlinehour');
+            Route::post("goOffline", [\App\Http\Controllers\Api\ProviderController::class, 'goOffline'])->middleware('auth:sanctum');
             Route::post("acceptOrder", [\App\Http\Controllers\Api\ProviderController::class, 'acceptOrder'])->middleware('auth:sanctum');
-
-
-            Route::post("logout", [\App\Http\Controllers\AuthController::class, 'logout'])->middleware('auth:sanctum');
+            Route::post("discardOrder", [\App\Http\Controllers\Api\ProviderController::class, 'discardOrder'])->middleware('auth:sanctum');
+            Route::post("rate/order", [\App\Http\Controllers\Api\ProviderController::class, 'rateOrder'])->middleware('auth:sanctum');
+            Route::post("completeOrder", [\App\Http\Controllers\Api\ProviderController::class, 'completeOrder'])->middleware('auth:sanctum');
+            Route::get("dashboard", [\App\Http\Controllers\Api\ProviderController::class, 'dashboardStats'])->middleware('auth:sanctum');
+            Route::get("getDateWiseEarnings", [\App\Http\Controllers\Api\ProviderController::class, 'getDateWiseEarnings'])->middleware('auth:sanctum');
+            Route::PUT("updateProfile", [\App\Http\Controllers\Api\ProviderController::class, 'updateProfile'])->middleware('auth:sanctum');
+            Route::PUT("updateBankDetails", [\App\Http\Controllers\Api\ProviderController::class, 'updateBankDetails'])->middleware('auth:sanctum');
+            Route::PUT("changePassword", [\App\Http\Controllers\Api\ProviderController::class, 'changePassword'])->middleware('auth:sanctum');
+            Route::post("logout", [\App\Http\Controllers\Api\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
     });
 

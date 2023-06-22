@@ -914,7 +914,7 @@ class HomeController extends Controller
             $name = '';
 
             $rules = array(
-                'profile_image'  => 'required|image|mimes:jpeg,png,jpg',
+                'profile_image'  => 'sometimes|required|image|mimes:jpeg,png,jpg',
                 'name' => 'sometimes|required',
                 'email' => 'sometimes|required',
 
