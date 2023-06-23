@@ -72,6 +72,10 @@ Route::prefix('v1')->group(function () {
             Route::PUT("updateProfile", [\App\Http\Controllers\Api\ProviderController::class, 'updateProfile'])->middleware('auth:sanctum');
             Route::PUT("updateBankDetails", [\App\Http\Controllers\Api\ProviderController::class, 'updateBankDetails'])->middleware('auth:sanctum');
             Route::PUT("changePassword", [\App\Http\Controllers\Api\ProviderController::class, 'changePassword'])->middleware('auth:sanctum');
+            Route::post("support", [\App\Http\Controllers\Api\ProviderController::class, 'addSupport'])->middleware('auth:sanctum');
+            Route::post("autoAcceptanceOrder", [\App\Http\Controllers\Api\ProviderController::class, 'autoAcceptanceOrder'])->middleware('auth:sanctum');
+            Route::get("complaints", [\App\Http\Controllers\Api\ProviderController::class, 'complaints'])->middleware('auth:sanctum');
+            Route::get("notifications", [\App\Http\Controllers\Api\ProviderController::class, 'notifications'])->middleware('auth:sanctum');
             Route::post("logout", [\App\Http\Controllers\Api\AuthController::class, 'logout'])->middleware('auth:sanctum');
         });
     });

@@ -261,7 +261,7 @@ class AuthController extends Controller
                 //3 =>store
                 //4=>delivery provider
                 //5=>delivery provider partner bussniess
-                $user = User::select('id', 'role', 'status', 'online_status', 'otp')->where('phone', $request->phone)->first();
+                $user = User::select('id', 'role', 'status', 'online_status', 'otp','auto_accpetance','bank_name','bank_no')->where('phone', $request->phone)->first();
                 if ($user) {
                     if ($request->otp == $user->otp) {
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Review;
+use App\Models\Support;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Auth;
@@ -125,7 +126,7 @@ class ProviderController extends Controller
 
   // send new order to all provider that are in 1km
 
-  public function sendOrderToProvider(Request $request)
+  public function sendOrderNotificationToProvider(Request $request)
   {
     try {
       $rules = array(
@@ -667,6 +668,151 @@ class ProviderController extends Controller
         'message' => 'Something went wrong',
         'sql_error' => $th->getMessage(),
       ], 500, [], JSON_FORCE_OBJECT);
+    }
+  }
+  public function addSupport(Request $request)
+  {
+    try {
+      $rules = array(
+
+        'name'  => 'required',
+        'email'  => 'required',
+        'phone'  => 'required',
+        'comments'  => 'required',
+      );
+      $messages = [
+        'name.required' => __('custommessage.name'),
+        'email.required' => __('custommessage.email'),
+        'phone.required' =>  __('custommessage.phone'),
+        'comments.required' =>  __('custommessage.comments'),
+      ];
+
+      $validator = Validator::make($request->all(), $rules, $messages);
+      if ($validator->fails()) {
+        $messages = $validator->errors()->all();
+        $msg = $messages[0];
+        return response()->json([
+          'status' => false,
+          'code' => 404,
+          'data' => [],
+          'message' => $msg
+        ], 404, [], JSON_FORCE_OBJECT);
+      } else {
+        $support = new Support();
+        $support->name = $request->name;
+        $support->support_num = rand(10000, 99999);
+        $support->type = "provider";
+        $support->user_id = Auth::user()->id;
+        $support->email = $request->email;
+        $support->phone = $request->phone;
+        $support->comments = $request->comments;
+        $support->status = 0;
+        $support->save();
+        return response()->json([
+          'status' => true,
+          'code' => 200,
+          'data' => [],
+          'message' =>  __('custommessage.requestsent'),
+        ], 200, [], JSON_FORCE_OBJECT);
+      }
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => false,
+        'code' => 500,
+        'data' => [],
+        'message' => 'Something went wrong',
+        'sql_error' => $th->getMessage()
+      ], 500);
+    }
+  }
+  public function complaints(Request $request)
+  {
+    try {
+      $support = Support::select('comments', 'support_num', DB::raw("CONCAT(DATE_FORMAT(created_at, '%b %D'), ' at ', DATE_FORMAT(created_at, '%h:%i %p')) AS date"))->where('user_id', Auth::user()->id);
+      if ($request->status == "inprogress") {
+        $support->where('status', 0);
+      }
+      if ($request->status == "closed") {
+        $support->where('status', 1);
+      }
+
+      $response = $support->get();
+
+      $data = [
+        'complaints' =>  $response
+      ];
+
+      return response()->json([
+        'status' => true,
+        'code' => 200,
+        'data' => $data,
+        'message' => 'get complaints successfully',
+      ], 200);
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => false,
+        'code' => 500,
+        'data' => [],
+        'message' => 'Something went wrong',
+        'sql_error' => $th->getMessage()
+      ], 500);
+    }
+  }
+  public function notifications(Request $request)
+  {
+    $user = $request->user();
+    $notifications = $user->notifications;
+    $data = [
+      'notifications' => $notifications
+    ];
+
+    return response()->json([
+      'status' => true,
+      'code' => 200,
+      'data' => $data,
+      'message' => 'get notifications successfully'
+    ], 200, [], JSON_FORCE_OBJECT);
+  }
+
+  public function autoAcceptanceOrder(Request $request)
+  {
+    try {
+      $rules = array(
+        'status'  => 'required',
+      );
+      $messages = [
+        'status.required' => 'status is required',
+      ];
+
+      $validator = Validator::make($request->all(), $rules, $messages);
+      if ($validator->fails()) {
+        $messages = $validator->errors()->all();
+        $msg = $messages[0];
+        return response()->json([
+          'status' => false,
+          'code' => 404,
+          'data' => [],
+          'message' => $msg
+        ], 404, [], JSON_FORCE_OBJECT);
+      } else {
+        User::where('id', Auth::user()->id)->update([
+          'auto_accpetance' => $request->status
+        ]);
+        return response()->json([
+          'status' => true,
+          'code' => 200,
+          'data' => [],
+          'message' => 'Status Changes Successfully',
+        ], 200,[], JSON_FORCE_OBJECT);
+      }
+    } catch (\Throwable $th) {
+      return response()->json([
+        'status' => false,
+        'code' => 500,
+        'data' => [],
+        'message' => 'Something went wrong',
+        'sql_error' => $th->getMessage()
+      ], 500);
     }
   }
 }

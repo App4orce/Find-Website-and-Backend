@@ -697,10 +697,13 @@ class HomeController extends Controller
             } else {
                 $support = new Support();
                 $support->name = $request->name;
+                $support->support_num = rand(10000, 99999);
+                $support->type = "user";
                 $support->user_id = Auth::user()->id;
                 $support->email = $request->email;
                 $support->phone = $request->phone;
                 $support->comments = $request->comments;
+                $support->status = 0;
                 $support->save();
                 return response()->json([
                     'status' => true,
