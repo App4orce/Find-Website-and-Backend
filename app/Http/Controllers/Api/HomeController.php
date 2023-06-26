@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\City;
 use App\Models\Slider;
-use App\Models\Wishlist;
+use App\Models\Whistlist;
 use App\Models\User;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -14,6 +14,7 @@ use App\Models\DeliveryAddress;
 use App\Models\Order;
 use App\Models\Package;
 use App\Models\Product;
+use App\Models\PromoCode;
 use App\Models\Review;
 use App\Models\Subscription;
 use App\Models\Support;
@@ -505,7 +506,7 @@ class HomeController extends Controller
 
                 $itemDetails = $cartItems->map(function ($product) {
                     return [
-                        'id'=> $product->product->id,
+                        'id' => $product->product->id,
                         'name' => $product->product->name,
                         'price' => $product->product->price,
                         'description' => $product->product->description,
@@ -576,7 +577,7 @@ class HomeController extends Controller
 
             $itemDetails = $cartItems->map(function ($product) {
                 return [
-                    'id'=> $product->product->id,
+                    'id' => $product->product->id,
                     'name' => $product->product->name,
                     'price' => $product->product->price,
                     'description' => $product->product->description,
@@ -875,23 +876,27 @@ class HomeController extends Controller
     public function getFavMerchants(Request $request)
     {
         try {
-            $favaouriteMerchant = User::find(Auth::user()->id)
-                ->whereHas('wishlist', function ($query) {
-                    $query->whereNotNull('user_to');
-                })
-                ->with('wishlist.restaurant')
-                ->limit(5)
-                ->get()
-                ->pluck('wishlist.*.restaurant')
-                ->flatten() // Flatten the nested array
-                ->map(function ($restaurant) {
+            $user = Auth::user();
+
+            $favoriteRestaurants = $user->wishlist->flatMap(function ($wishlist) {
+                $restaurant = $wishlist->restaurant;
+                if ($restaurant) {
                     return [
-                        'name' => $restaurant['name'],
-                        'profile_image' =>  asset('public/profile_image/' . $restaurant['profile_image']),
+                        [
+                            'id' => $restaurant->id,
+                            'name' => $restaurant->name,
+                            'profile_image' => asset('public/profile_image/' . $restaurant->profile_image),
+                        ],
                     ];
-                });
+                }
+                return [];
+            });
+
+
+
+
             $data = [
-                'favaouriteMerchant' =>  $favaouriteMerchant
+                'favoriteRestaurants' => $favoriteRestaurants,
             ];
             return response()->json([
                 'status' => true,
@@ -1256,6 +1261,169 @@ class HomeController extends Controller
                 'message' => 'Something went wrong',
                 'sql_error' => $th->getMessage(),
             ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function addFavourite(Request $request)
+    {
+        try {
+            $rules = array(
+                'user_to' => 'required|integer',
+            );
+            $messages = [
+                'user_to.required' =>  'resturent/merchant id required',
+
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                $messages = $validator->errors()->all();
+                $msg = $messages[0];
+                return response()->json([
+                    'status' => false,
+                    'code' => 401,
+                    'data' => [],
+                    'message' => $msg
+                ], 401, [], JSON_FORCE_OBJECT);
+            } else {
+                // Create the wishlist
+                $wishlist = Whistlist::create([
+                    'user_id' => Auth::user()->id,
+                    'user_to' => $request->user_to,
+                ]);
+
+                return response()->json([
+                    'status' => true,
+                    'code' => 200,
+                    'data' => [],
+                    'message' => 'Added In Favourite List',
+                ], 200, [], JSON_FORCE_OBJECT);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+                'sql_error' => $th->getMessage(),
+            ], 500, [], JSON_FORCE_OBJECT);
+        }
+    }
+
+    public function applyPromo(Request $request)
+    {
+        try {
+            $promoCode = $request->input('promo_code');
+
+            // Check if the promo code exists and is active
+            $promoCodeModel = PromoCode::where('code', $promoCode)
+                ->first();
+            if (!empty($promoCodeModel)) {
+                if ($promoCodeModel->status == 1) {
+                    // Apply discount based on percentage
+                    $totalAmount = 100; // Example: Initial total amount
+                    $discountPercentage = $promoCodeModel->discount_percentage;
+                    $discountedAmount = $totalAmount - ($totalAmount * $discountPercentage / 100);
+
+                    $user = Auth::user();
+                    $carts = $user->cart()->with('cartItems.product', 'restaurant')->get();
+
+                    $responseData = [];
+                    foreach ($carts as $cart) {
+                        $cartItems = $cart->cartItems;
+                        $restaurant = $cart->restaurant;
+
+                        $restaurantDetails = [
+                            'id' => $restaurant->id,
+                            'name' => $restaurant->name,
+                            'image' => url('public/profile_image/' . $restaurant->profile_image),
+                            'item_count' => $cartItems->count() // Add item count to the restaurant details
+                            // Add more restaurant details as needed
+                        ];
+
+
+                        $subamount = $cartItems->sum(function ($item) {
+                            return $item->quantity * $item->product->price;
+                        });
+                    }
+                    return  $subamount;
+                } else {
+                    //promocode is not active
+                }
+            } else {
+                //promo not exist
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'message' => 'Failed to apply promo code.',
+                'error' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateCart(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $carts = $user->cart()->with('cartItems.product', 'restaurant')->get();
+
+            $responseData = [];
+            foreach ($carts as $cart) {
+                $cartItems = $cart->cartItems;
+                $restaurant = $cart->restaurant;
+
+                $restaurantDetails = [
+                    'id' => $restaurant->id,
+                    'name' => $restaurant->name,
+                    'image' => url('public/profile_image/' . $restaurant->profile_image),
+                    'item_count' => $cartItems->count() // Add item count to the restaurant details
+                    // Add more restaurant details as needed
+                ];
+
+
+                $subamount = $cartItems->sum(function ($item) {
+                    return $item->quantity * $item->product->price;
+                });
+
+                $itemDetails = $cartItems->map(function ($product) {
+                    return [
+                        'id' => $product->product->id,
+                        'name' => $product->product->name,
+                        'price' => $product->product->price,
+                        'description' => $product->product->description,
+                        'image' =>  asset('public/product/' . $product->product->image),
+                        'quantity' => $product->quantity,
+                        // Add more product details as needed
+                    ];
+                })->toArray();
+
+                $deliveryfee = 0;
+                $responseData[] = [
+                    'id' => $cart->id,    // cart id
+                    'restaurant_details' => $restaurantDetails,
+                    'items' => $itemDetails,
+                    'subamount' => $subamount, // Include the total amount in the response
+                    'deliveryfee' => 0,
+                    'total' => $deliveryfee + $subamount
+                ];
+            }
+
+            return response()->json([
+                'status' => true,
+                'code' => 200,
+                'data' => $responseData,
+                'message' => 'Cart items listed successfully'
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'code' => 500,
+                'data' => [],
+                'message' => 'Something went wrong',
+                'sql_error' => $th->getMessage()
+            ], 500);
         }
     }
 }

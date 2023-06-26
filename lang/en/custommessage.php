@@ -50,5 +50,12 @@ return [
 	'package_id.required' => 'package id is required',
 	'amount.required' => 'Amount is required',
 	'password.min' => 'Password should be 8 characters long',
+	'cart_id.required' => 'cart id is required',
+	'dropoff_location.required' => 'dropoff location is required',
+	'pickup_location.required' => 'pickup location is required',
+	'total_amount' => 'total amount is required',
+	'messagepPlacedOrder' => 'order placed successfully',
+	'orderId.required' => 'order id required',
+	'type.required' => 'type is required',
 	
 ];

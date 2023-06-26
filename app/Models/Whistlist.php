@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Whistlist extends Model
 {
     use HasFactory;
-
+    protected $fillable = ['user_id', 'user_to'];
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_to');
+        return $this->belongsTo(User::class, 'user_id');
     }
     public function restaurant()
     {

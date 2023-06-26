@@ -49,5 +49,12 @@ return [
     'package_id.required' => 'معرف الباقة مطلوب.',
     'amount.required' => 'المبلغ مطلوب.',
     'password.min' => 'المبلغ مطلوب.',
-    'password.min' => 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل'
+    'password.min' => 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل',
+    'cart_id.required' => 'مطلوب إدخال معرف العربة',
+	'dropoff_location.required' => 'حقل موقع التسليم مطلوب',
+    'pickup_location.required' => 'حقل موقع الاستلام مطلوب',
+    'total_amount' => 'حقل المبلغ الإجمالي مطلوب',
+    'messagepPlacedOrder' => 'تم تأكيد الطلب بنجاح',
+    'orderId.required' => 'مطلوب إدخال معرف الطلب',
+    'type.required' => 'type is required',
 ];

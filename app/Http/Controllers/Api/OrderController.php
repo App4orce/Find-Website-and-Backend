@@ -21,8 +21,8 @@ class OrderController extends Controller
                 'cart_id'  => 'required',
             );
             $messages = [
-                'merchant_id.required' => 'merchant id required',
-                'cart_id.required' => 'cart id is required',
+                'merchant_id.required' => __('custommessage.id.merchant.required'),
+                'cart_id.required' => __('custommessage.cart_id.required'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -88,7 +88,7 @@ class OrderController extends Controller
                 'orderId'  => 'required',
             );
             $messages = [
-                'orderId.required' => 'order id required',
+                'orderId.required' =>  __('custommessage.orderId.required'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -216,7 +216,7 @@ class OrderController extends Controller
                 'orderId'  => 'required',
             );
             $messages = [
-                'orderId.required' => 'order id required',
+                'orderId.required' =>  __('custommessage.orderId.required'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -296,9 +296,9 @@ class OrderController extends Controller
                 'total_amount'  => 'required'
             );
             $messages = [
-                'dropoff_location.required' => 'dropoff location is required',
-                'pickup_location.required' => 'pickup location is required',
-                'total_amount' => 'total amount is required'
+                'dropoff_location.required' =>  __('custommessage.dropoff_location.required'),
+                'pickup_location.required' =>  __('custommessage.pickup_location.required'),
+                'total_amount' =>  __('custommessage.total_amount.required'),
             ];
 
             $validator = Validator::make($request->all(), $rules, $messages);
@@ -334,7 +334,7 @@ class OrderController extends Controller
                     'status' => true,
                     'code' => 200,
                     'data' => [],
-                    'message' => 'order placed successfully'
+                    'message' =>  __('custommessage.messagepPlacedOrder')
                 ],200 , [] ,JSON_FORCE_OBJECT);
             }
         } catch (\Throwable $th) {

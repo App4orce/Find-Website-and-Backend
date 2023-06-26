@@ -38,6 +38,9 @@ Route::prefix('v1')->group(function () {
             Route::get("getAddress", [\App\Http\Controllers\Api\HomeController::class, 'getAddress'])->middleware('auth:sanctum');
             Route::post("delete/address", [\App\Http\Controllers\Api\HomeController::class, 'deleteAddress'])->middleware('auth:sanctum');
             Route::get("getFavMerchant", [\App\Http\Controllers\Api\HomeController::class, 'getFavMerchants'])->middleware('auth:sanctum');
+            Route::post("wishlist", [\App\Http\Controllers\Api\HomeController::class, 'addFavourite'])->middleware('auth:sanctum');
+            Route::post("applyPromo", [\App\Http\Controllers\Api\HomeController::class, 'applyPromo'])->middleware('auth:sanctum');
+            Route::post("updateCart", [\App\Http\Controllers\Api\HomeController::class, 'updateCart'])->middleware('auth:sanctum');
             Route::PUT("updateProfile", [\App\Http\Controllers\Api\HomeController::class, 'updateProfile'])->middleware('auth:sanctum');
             Route::get("foodDelivery", [\App\Http\Controllers\Api\HomeController::class, 'foodDelivery']);
             Route::get("stores", [\App\Http\Controllers\Api\HomeController::class, 'stores']);

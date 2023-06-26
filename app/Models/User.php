@@ -47,7 +47,10 @@ class User extends Authenticatable
 
     public function wishlist()
     {
-        return $this->hasMany(Whistlist::class, 'user_id');
+   
+        return $this->hasMany(Whistlist::class, 'user_id')
+        ->whereNotNull('user_to')
+        ->with('restaurant');
     }
 
     public function city()
