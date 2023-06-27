@@ -10,6 +10,13 @@ class Product extends Model
     use HasFactory;
     public function subItems()
     {
-        return $this->hasMany(SubProduct::class)->select('id','product_id','name','status','price');
+        return $this->hasMany(SubProduct::class)->select('id', 'product_id', 'name', 'status', 'price');
     }
+
+    public function subProductItems()
+    {
+        return $this->hasMany(SubProductItem::class,'sub_product_id');
+    }
+    
+    
 }

@@ -12,4 +12,9 @@ class SubProduct extends Model
     {
         return $this->belongsTo(Product::class);
     }
+    public function subProductItems()
+    {
+        return $this->hasMany(SubProductItem::class,'sub_product_id');
+    }
+    
 }

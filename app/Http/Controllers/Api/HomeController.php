@@ -16,6 +16,7 @@ use App\Models\Package;
 use App\Models\Product;
 use App\Models\PromoCode;
 use App\Models\Review;
+use App\Models\SubProductItem;
 use App\Models\Subscription;
 use App\Models\Support;
 use Illuminate\Http\Request;
@@ -484,7 +485,7 @@ class HomeController extends Controller
     {
         try {
             $user = Auth::user();
-            $carts = $user->cart()->with('cartItems.product', 'restaurant')->get();
+            $carts = $user->cart()->with('cartItems.product.subItems', 'restaurant')->get();
 
             $responseData = [];
             foreach ($carts as $cart) {
@@ -499,19 +500,29 @@ class HomeController extends Controller
                     // Add more restaurant details as needed
                 ];
 
-
                 $subamount = $cartItems->sum(function ($item) {
                     return $item->quantity * $item->product->price;
                 });
 
-                $itemDetails = $cartItems->map(function ($product) {
+                $itemDetails = $cartItems->map(function ($cartItem) {
+                    $product = $cartItem->product;
+                    $subProductItems = $product->subItems->map(function ($subProductItem) {
+                        return [
+                            'id' => $subProductItem->id,
+                            'sub_product_id' => $subProductItem->sub_product_id,
+                            'quantity' => $subProductItem->quantity,
+                            // Add more sub-product item details as needed
+                        ];
+                    })->toArray();
+
                     return [
-                        'id' => $product->product->id,
-                        'name' => $product->product->name,
-                        'price' => $product->product->price,
-                        'description' => $product->product->description,
-                        'image' =>  asset('public/product/' . $product->product->image),
-                        'quantity' => $product->quantity,
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => $product->price,
+                        'description' => $product->description,
+                        'image' => asset('public/product/' . $product->image),
+                        'quantity' => $cartItem->quantity,
+                        'sub_product_items' => $subProductItems,
                         // Add more product details as needed
                     ];
                 })->toArray();
@@ -543,6 +554,7 @@ class HomeController extends Controller
             ], 500);
         }
     }
+
 
 
     // get cart by id
@@ -622,41 +634,86 @@ class HomeController extends Controller
 
     public function addCart(Request $request)
     {
+
         try {
-            $user = Auth::user();
-            $productMerchantId = $request->input('merchant_id');
-            $cart = Cart::where('user_id', $user->id)->where('merchant_id', $productMerchantId)->first();
+            $rules = array(
 
-            // If the user doesn't have a cart for this merchant, create a new one
-            if (!$cart) {
-                $cart = new Cart();
-                $cart->user_id = $user->id;
-                $cart->merchant_id = $productMerchantId;
-                $cart->save();
-            }
+                'merchant_id'  => 'required',   //merchant id
+                'product_id'  => 'required',   //product id
+                'quantity'  => 'required',   //product id
+            );
+            $messages = [
+                'merchant_id.required' =>  'merchant id required',
+                'product_id.required' =>  'product id required',
+                'quantity.required' =>  'quantity is required',
+            ];
 
-            $cartItem = CartItem::where('cart_id', $cart->id)->where('product_id', $request->product_id)->first();
-            if ($cartItem) {
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                $messages = $validator->errors()->all();
+                $msg = $messages[0];
                 return response()->json([
                     'status' => false,
-                    'code' => 400,
+                    'code' => 404,
                     'data' => [],
-                    'message' => __('custommessage.item_exist'),
-                ], 400);
+                    'message' => $msg
+                ], 404, [], JSON_FORCE_OBJECT);
             } else {
-                $cartItem = new CartItem();
-                $cartItem->cart_id = $cart->id;
-                $cartItem->product_id = $request->input('product_id');
-                $cartItem->quantity = $request->input('quantity');
-                $cartItem->save();
-            }
+                $user = Auth::user();
+                $productMerchantId = $request->input('merchant_id');
+                $cart = Cart::where('user_id', $user->id)->where('merchant_id', $productMerchantId)->first();
 
-            return response()->json([
-                'status' => true,
-                'code' => 200,
-                'data' => [],
-                'message' =>  __('custommessage.item_added'),
-            ], 200);
+                // If the user doesn't have a cart for this merchant, create a new one
+                if (!$cart) {
+                    $cart = new Cart();
+                    $cart->user_id = $user->id;
+                    $cart->merchant_id = $productMerchantId;
+                    $cart->save();
+                }
+
+                $product = Product::find($request->input('product_id'));
+                if (!$product) {
+                    return response()->json([
+                        'status' => false,
+                        'code' => 404,
+                        'data' => [],
+                        'message' => __('custommessage.product_not_found'),
+                    ], 404);
+                }
+
+                $cartItem = CartItem::where('cart_id', $cart->id)->where('product_id', $request->product_id)->first();
+                if ($cartItem) {
+                    return response()->json([
+                        'status' => false,
+                        'code' => 400,
+                        'data' => [],
+                        'message' => __('custommessage.item_exist'),
+                    ], 400);
+                } else {
+                    $cartItem = new CartItem();
+                    $cartItem->cart_id = $cart->id;
+                    $cartItem->product_id = $request->input('product_id');
+                    $cartItem->quantity = $request->input('quantity');
+                    $cartItem->save();
+
+                    if ($request->has('sub_products')) {
+                        foreach ($request->input('sub_products') as $subProduct) {
+                            $subProductItem = new SubProductItem();
+                            $subProductItem->cart_item_id = $cartItem->id;
+                            $subProductItem->sub_product_id = $subProduct['sub_product_id'];
+                            $subProductItem->quantity = $subProduct['quantity'];
+                            $subProductItem->save();
+                        }
+                    }
+                }
+
+                return response()->json([
+                    'status' => true,
+                    'code' => 200,
+                    'data' => [],
+                    'message' =>  __('custommessage.item_added'),
+                ], 200);
+            }
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
@@ -1313,53 +1370,94 @@ class HomeController extends Controller
     public function applyPromo(Request $request)
     {
         try {
-            $promoCode = $request->input('promo_code');
+            $rules = array(
+                'cartId' => 'required|integer',
+                'promo_code' => 'required',
+            );
+            $messages = [
+                'cartId.required' =>  'cart id is required',
+                'promo_code.required' =>  'promo code is required',
 
-            // Check if the promo code exists and is active
-            $promoCodeModel = PromoCode::where('code', $promoCode)
-                ->first();
-            if (!empty($promoCodeModel)) {
-                if ($promoCodeModel->status == 1) {
-                    // Apply discount based on percentage
-                    $totalAmount = 100; // Example: Initial total amount
-                    $discountPercentage = $promoCodeModel->discount_percentage;
-                    $discountedAmount = $totalAmount - ($totalAmount * $discountPercentage / 100);
+            ];
 
-                    $user = Auth::user();
-                    $carts = $user->cart()->with('cartItems.product', 'restaurant')->get();
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                $messages = $validator->errors()->all();
+                $msg = $messages[0];
+                return response()->json([
+                    'status' => false,
+                    'code' => 401,
+                    'data' => [],
+                    'message' => $msg
+                ], 401, [], JSON_FORCE_OBJECT);
+            } else {
+                $promoCode = $request->input('promo_code');
 
-                    $responseData = [];
-                    foreach ($carts as $cart) {
+                // Check if the promo code exists and is active
+                $promoCodeModel = PromoCode::where('code', $promoCode)
+                    ->first();
+                if (!empty($promoCodeModel)) {
+                    if ($promoCodeModel->status == 1) {
+
+
+                        $cart = Cart::with('cartItems.product', 'restaurant')->find($request->cartId);
+
+                        if (!$cart) {
+                            return response()->json([
+                                'status' => false,
+                                'code' => 404,
+                                'data' => [],
+                                'message' => 'Cart not found'
+                            ], 404);
+                        }
+
                         $cartItems = $cart->cartItems;
                         $restaurant = $cart->restaurant;
-
-                        $restaurantDetails = [
-                            'id' => $restaurant->id,
-                            'name' => $restaurant->name,
-                            'image' => url('public/profile_image/' . $restaurant->profile_image),
-                            'item_count' => $cartItems->count() // Add item count to the restaurant details
-                            // Add more restaurant details as needed
-                        ];
 
 
                         $subamount = $cartItems->sum(function ($item) {
                             return $item->quantity * $item->product->price;
                         });
+
+                        // Apply discount based on percentage
+                        $discountPercentage = $promoCodeModel->discount_percentage;
+                        $discountedAmount = $subamount - ($subamount * $discountPercentage / 100);
+
+                        $data =  [
+                            'subamount' =>    $discountedAmount
+                        ];
+
+                        return response()->json([
+                            'status' => true,
+                            'code' => 200,
+                            'data' => $data,
+                            'message' => 'discount applied',
+                        ], 200);
+                    } else {
+                        return response()->json([
+                            'status' => false,
+                            'code' => 404,
+                            'data' => [],
+                            'message' => 'Promo code is not active',
+                        ], 404, [], JSON_FORCE_OBJECT);
                     }
-                    return  $subamount;
                 } else {
-                    //promocode is not active
+                    return response()->json([
+                        'status' => false,
+                        'code' => 404,
+                        'data' => [],
+                        'message' => 'Promo code is not exist',
+                    ], 404, [], JSON_FORCE_OBJECT);
                 }
-            } else {
-                //promo not exist
             }
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
                 'code' => 500,
-                'message' => 'Failed to apply promo code.',
-                'error' => $th->getMessage(),
-            ], 500);
+                'data' => [],
+                'message' => 'Something Wrong',
+
+            ], 500, [], JSON_FORCE_OBJECT);
         }
     }
 

@@ -56,5 +56,6 @@ return [
     'total_amount' => 'حقل المبلغ الإجمالي مطلوب',
     'messagepPlacedOrder' => 'تم تأكيد الطلب بنجاح',
     'orderId.required' => 'مطلوب إدخال معرف الطلب',
-    'type.required' => 'type is required',
+    'type.required' => 'النوع مطلوب',
+    'product_not_found' => 'لمنتج غير موجود',
 ];

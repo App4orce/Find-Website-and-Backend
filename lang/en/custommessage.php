@@ -57,5 +57,6 @@ return [
 	'messagepPlacedOrder' => 'order placed successfully',
 	'orderId.required' => 'order id required',
 	'type.required' => 'type is required',
+	'product_not_found' => 'product not found',
 	
 ];
